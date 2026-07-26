@@ -1,0 +1,16 @@
+{
+  "name": "ProPassport Photo Maker",
+  "short_name": "ProPassport",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/512/2563eb/ffffff?text=📸",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
