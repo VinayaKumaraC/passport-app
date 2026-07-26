@@ -1,8 +1,11 @@
 {
+  "id": "/",
   "name": "ProPassport Photo Maker",
   "short_name": "ProPassport",
+  "description": "An AI-powered web application to quickly generate standard 3.5x4.5cm passport photos on a 4x6 print sheet.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f8fafc",
   "theme_color": "#2563eb",
   "icons": [
@@ -11,6 +14,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://via.placeholder.com/1080x1920/f8fafc/2563eb?text=Mobile+Screenshot",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://via.placeholder.com/1920x1080/f8fafc/2563eb?text=Desktop+Screenshot",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
