@@ -19,21 +19,33 @@
   },
   "icons": [
     {
-      "src": "https://via.placeholder.com/512/2563eb/ffffff?text=📸",
+      "src": "https://placehold.co/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://placehold.co/512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://placehold.co/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "https://via.placeholder.com/1080x1920/f8fafc/2563eb?text=Mobile+Screenshot",
+      "src": "https://placehold.co/1080x1920.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
-      "src": "https://via.placeholder.com/1920x1080/f8fafc/2563eb?text=Desktop+Screenshot",
+      "src": "https://placehold.co/1920x1080.png",
       "sizes": "1920x1080",
       "type": "image/png",
       "form_factor": "wide"
@@ -47,7 +59,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "https://via.placeholder.com/192/2563eb/ffffff?text=📸",
+          "src": "https://placehold.co/192x192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
