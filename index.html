@@ -10,7 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.json">
-<!-- External Libraries (Removed PDF library for better performance) -->
+
+<!-- External Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://unpkg.com/smartcrop@2.0.5/smartcrop.js"></script>
 
@@ -387,7 +388,6 @@
                     <div class="step-title">Format & Download</div>
                 </div>
                 
-                <!-- Updated Dropdown -->
                 <select id="exportFormat" class="custom-select">
                     <option value="png">High-Quality PNG</option>
                     <option value="jpg">Standard JPG</option>
@@ -425,132 +425,7 @@
 
     let currentImageUrl = null;
 
-    // 1. Initialize placeholders
-    function renderSheet(imageUrl = null) {
-        printArea.innerHTML = '';
-        for(let i = 0; i < 8; i++) {
-            const frame = document.createElement('div');
-            frame.className = 'photo-frame';
-
-            const img = document.createElement('img');
-            img.className = 'photo-img';
-            
-            if (imageUrl) {
-                img.src = imageUrl;
-            } else {
-                img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="350" height="450"><rect width="100%" height="100%" fill="%23f1f5f9"/><circle cx="175" cy="180" r="60" fill="%23cbd5e1"/><path d="M75 450 Q 175 300 275 450" fill="%23cbd5e1"/></svg>';
-            }
-            
-            frame.appendChild(img);
-            printArea.appendChild(frame);
-        }
-    }
-
-    renderSheet();
-
-    // 2. Handle Image Upload & AI Cropping
-    imageInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(file) {
-            aiStatus.style.display = 'none';
-            generateBtn.disabled = true;
-            generateBtn.innerText = 'AI is Processing...';
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const rawImageUrl = event.target.result;
-                
-                const imgObj = new Image();
-                imgObj.src = rawImageUrl;
-                imgObj.onload = function() {
-                    
-                    SmartCrop.crop(imgObj, { width: 350, height: 450 }).then(function(result) {
-                        
-                        const crop = result.topCrop;
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 350;
-                        canvas.height = 450;
-                        const ctx = canvas.getContext('2d');
-                        
-                        ctx.drawImage(
-                            imgObj, 
-                            crop.x, crop.y, crop.width, crop.height, 
-                            0, 0, canvas.width, canvas.height
-                        );
-
-                        currentImageUrl = canvas.toDataURL('image/png');
-                        
-                        renderSheet(currentImageUrl);
-                        
-                        aiStatus.style.display = 'block';
-                        generateBtn.disabled = false;
-                        generateBtn.innerText = 'Generate & Download';
-                    }).catch(() => {
-                        currentImageUrl = rawImageUrl;
-                        renderSheet(currentImageUrl);
-                        generateBtn.disabled = false;
-                        generateBtn.innerText = 'Generate & Download';
-                    });
-                }
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // 3. Handle Download Exports (PNG or JPG only)
-    generateBtn.addEventListener('click', () => {
-        const originalText = generateBtn.innerText;
-        generateBtn.innerText = 'Generating File...';
-        generateBtn.disabled = true;
-
-        const format = exportFormat.value;
-
-        html2canvas(printArea, { scale: 4, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
-            
-            const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-            const imageURL = canvas.toDataURL(mimeType, 1.0);
-            
-            const link = document.createElement('a');
-            link.download = `Passport_Photos_4x6.${format}`;
-            link.href = imageURL;
-            link.click();
-
-            generateBtn.innerText = originalText;
-            generateBtn.disabled = false;
-        }).catch(err => {
-            console.error("Error:", err);
-            alert("Error generating the file.");
-            generateBtn.innerText = originalText;
-            generateBtn.disabled = false;
-        });
-    });
-
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registered successfully');
-        })
-        .catch(err => {
-          console.log('Service Worker registration failed: ', err);
-        });
-    });
-  }
-</script>
-
-<script>
-    const imageInput = document.getElementById('imageInput');
-    const printArea = document.getElementById('printArea');
-    const generateBtn = document.getElementById('generateBtn');
-    const exportFormat = document.getElementById('exportFormat');
-    const aiStatus = document.getElementById('aiStatus');
-
-    let currentImageUrl = null;
-
-    // Create Toast Popup Element dynamically
+    // Create Toast Popup Element dynamically for "Saved in gallery" message
     const toast = document.createElement('div');
     toast.innerText = '🖼️ Saved in gallery / downloads!';
     toast.style.cssText = `
@@ -649,7 +524,7 @@
         }
     });
 
-    // 3. Handle Download Exports & Pop Message
+    // 3. Handle Download Exports & Toast Notification
     generateBtn.addEventListener('click', () => {
         const originalText = generateBtn.innerText;
         generateBtn.innerText = 'Generating File...';
@@ -667,11 +542,10 @@
             link.href = imageURL;
             link.click();
 
-            // Reset Button State
             generateBtn.innerText = originalText;
             generateBtn.disabled = false;
 
-            // Trigger "Saved in Gallery" Popup Message
+            // Trigger the "Saved in gallery" notification message
             showToast();
 
         }).catch(err => {
@@ -682,7 +556,21 @@
         });
     });
 </script>
-    
-    
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker registered successfully');
+        })
+        .catch(err => {
+          console.log('Service Worker registration failed: ', err);
+        });
+    });
+  }
+</script>
+
 </body>
 </html>
