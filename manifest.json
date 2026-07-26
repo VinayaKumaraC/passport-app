@@ -4,10 +4,19 @@
   "short_name": "ProPassport",
   "description": "An AI-powered web application to quickly generate standard 3.5x4.5cm passport photos on a 4x6 print sheet.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#f8fafc",
   "theme_color": "#2563eb",
+  "dir": "ltr",
+  "lang": "en-US",
+  "prefer_related_applications": false,
+  "categories": ["utilities", "photo", "productivity"],
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  },
   "icons": [
     {
       "src": "https://via.placeholder.com/512/2563eb/ffffff?text=📸",
@@ -28,6 +37,21 @@
       "sizes": "1920x1080",
       "type": "image/png",
       "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Make New Photo",
+      "short_name": "New Photo",
+      "description": "Quickly start a new passport photo sheet",
+      "url": "/",
+      "icons": [
+        {
+          "src": "https://via.placeholder.com/192/2563eb/ffffff?text=📸",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
