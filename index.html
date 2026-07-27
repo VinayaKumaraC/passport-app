@@ -426,7 +426,7 @@
                 </button>
 
                 <button class="btn-secondary" id="shareBtn" disabled>
-                    📤 Share Sheet to Print App
+                    🖨️ Print Preview & Share
                 </button>
             </div>
         </aside>
@@ -488,7 +488,7 @@
         }, 3500);
     }
 
-    // Render Sheet layout
+    // Render Sheet layout with smart row separation for 2 photos
     function renderSheet(imageUrls = []) {
         printArea.innerHTML = '';
         const totalSlots = parseInt(photoCountSelect.value);
@@ -623,46 +623,62 @@
         });
     });
 
-    // Share Handler with Android WebView Fallback
+    // Print Preview & App-Safe Wrapper Handler
     shareBtn.addEventListener('click', () => {
+        const originalText = shareBtn.innerText;
+        shareBtn.innerText = 'Opening Print View...';
+        shareBtn.disabled = true;
+
         const format = exportFormat.value;
 
         html2canvas(printArea, { scale: 4, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
             const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
+            const imageURL = canvas.toDataURL(mimeType, 1.0);
             
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], `Passport_Photos_4x6.${format}`, { type: mimeType });
-                
-                // Check if Web Share with Files is supported in current view
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            title: 'Passport Photo Sheet',
-                            text: 'Here is your 4x6 passport photo sheet ready for printing.',
-                            files: [file],
-                        });
-                        showToast('📤 Shared successfully!');
-                    } catch (error) {
-                        if (error.name !== 'AbortError') {
-                            console.error('Sharing failed', error);
-                        }
-                    }
-                } else {
-                    // Fallback for Android WebViews where native sharing is restricted:
-                    // Automatically triggers a direct download and informs the user.
-                    const imageURL = canvas.toDataURL(mimeType, 1.0);
-                    const link = document.createElement('a');
-                    link.download = `Passport_Photos_4x6.${format}`;
-                    link.href = imageURL;
-                    link.click();
-                    showToast('📥 Downloaded directly for your Print App!');
-                }
-            }, mimeType, 1.0);
+            const win = window.open();
+            if (win) {
+                win.document.write(`
+                    <html>
+                        <head><title>Print Preview - ProPassport</title></head>
+                        <body style="margin:0; background:#0f172a; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center;">
+                            <img src="${imageURL}" style="max-width:95%; max-height:80vh; object-fit:contain; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" />
+                            <p style="color:white; font-family:sans-serif; margin-top:20px; font-size:15px; font-weight:500;">Long press image to save, or open your print app menu</p>
+                        </body>
+                    </html>
+                `);
+                showToast('🖨️ Print preview opened!');
+            } else {
+                const link = document.createElement('a');
+                link.download = `Passport_Photos_4x6.${format}`;
+                link.href = imageURL;
+                link.click();
+                showToast('📥 Downloaded for printing!');
+            }
+
+            shareBtn.innerText = originalText;
+            shareBtn.disabled = false;
         }).catch(err => {
             console.error("Error:", err);
-            alert("Error preparing file.");
+            alert("Error preparing image for print view.");
+            shareBtn.innerText = originalText;
+            shareBtn.disabled = false;
         });
     });
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker registered successfully');
+        })
+        .catch(err => {
+          console.log('Service Worker registration failed: ', err);
+        });
+    });
+  }
 </script>
 
 </body>
