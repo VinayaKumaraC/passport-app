@@ -634,7 +634,7 @@
         });
     });
 
-    // Handle Share Feature to Mobile/Desktop Print Apps
+   // Handle Share Feature to Mobile/Desktop Print Apps
     shareBtn.addEventListener('click', () => {
         const originalText = shareBtn.innerText;
         shareBtn.innerText = 'Preparing Share...';
@@ -646,8 +646,16 @@
             const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
             
             canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    alert('Could not create image blob for sharing.');
+                    shareBtn.innerText = originalText;
+                    shareBtn.disabled = false;
+                    return;
+                }
+
                 const file = new File([blob], `Passport_Photos_4x6.${format}`, { type: mimeType });
                 
+                // Try native Web Share API first
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -658,11 +666,13 @@
                         showToast('📤 Shared successfully!');
                     } catch (error) {
                         if (error.name !== 'AbortError') {
-                            console.error('Sharing failed', error);
+                            console.error('Sharing failed, falling back to download', error);
+                            triggerDownloadFallback(blob, format);
                         }
                     }
                 } else {
-                    alert('Sharing files is not supported on this browser/device.');
+                    // Fallback for browsers/environments blocking direct file sharing
+                    triggerDownloadFallback(blob, format);
                 }
 
                 shareBtn.innerText = originalText;
@@ -676,7 +686,15 @@
             shareBtn.disabled = false;
         });
     });
-</script>
+
+    // Helper fallback to ensure you never get stuck without your photo
+    function triggerDownloadFallback(blob, format) {
+        const link = document.createElement('a');
+        link.download = `Passport_Photos_4x6.${format}`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        showToast('🖼️ Saved to gallery/downloads for your print app!');
+    }
 
 <!-- Service Worker Registration -->
 <script>
