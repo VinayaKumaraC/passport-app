@@ -623,12 +623,8 @@
         });
     });
 
-    // Share Handler
+    // Share Handler with Android WebView Fallback
     shareBtn.addEventListener('click', () => {
-        const originalText = shareBtn.innerText;
-        shareBtn.innerText = 'Preparing Share...';
-        shareBtn.disabled = true;
-
         const format = exportFormat.value;
 
         html2canvas(printArea, { scale: 4, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
@@ -637,6 +633,7 @@
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], `Passport_Photos_4x6.${format}`, { type: mimeType });
                 
+                // Check if Web Share with Files is supported in current view
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -651,35 +648,21 @@
                         }
                     }
                 } else {
-                    alert('Sharing files is not directly supported on this view/device, use Download instead.');
+                    // Fallback for Android WebViews where native sharing is restricted:
+                    // Automatically triggers a direct download and informs the user.
+                    const imageURL = canvas.toDataURL(mimeType, 1.0);
+                    const link = document.createElement('a');
+                    link.download = `Passport_Photos_4x6.${format}`;
+                    link.href = imageURL;
+                    link.click();
+                    showToast('📥 Downloaded directly for your Print App!');
                 }
-
-                shareBtn.innerText = originalText;
-                shareBtn.disabled = false;
             }, mimeType, 1.0);
-
         }).catch(err => {
             console.error("Error:", err);
-            alert("Error preparing file for sharing.");
-            shareBtn.innerText = originalText;
-            shareBtn.disabled = false;
+            alert("Error preparing file.");
         });
     });
-</script>
-
-<!-- Service Worker Registration -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registered successfully');
-        })
-        .catch(err => {
-          console.log('Service Worker registration failed: ', err);
-        });
-    });
-  }
 </script>
 
 </body>
