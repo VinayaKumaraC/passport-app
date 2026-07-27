@@ -435,7 +435,7 @@
                 </button>
 
                 <button class="btn-secondary" id="shareBtn" disabled>
-                    📤 Share to Print App
+                    📤 Send to Print App / Viewer
                 </button>
             </div>
         </aside>
@@ -508,7 +508,6 @@
         if (numImgs === 0) {
             layoutImages = new Array(totalSlots).fill(null);
         } else if (numImgs === 2) {
-            // Row-by-row layout for 2 photos (Top row photo 1, bottom row photo 2)
             const slotsPerRow = 4;
             const topRowCount = Math.min(Math.ceil(totalSlots / 2), slotsPerRow);
             const bottomRowCount = totalSlots - topRowCount;
@@ -518,7 +517,6 @@
                 ...new Array(bottomRowCount).fill(imageUrls[1])
             ];
         } else {
-            // General distribution for 1, 3, or 4 photos
             for (let i = 0; i < totalSlots; i++) {
                 const imgIndex = i % numImgs;
                 layoutImages.push(imageUrls[imgIndex]);
@@ -545,7 +543,6 @@
 
     renderSheet();
 
-    // Re-render layout dynamically when user changes count dropdown
     photoCountSelect.addEventListener('change', () => {
         renderSheet(processedImages);
     });
@@ -634,10 +631,10 @@
         });
     });
 
-    // Handle Share Feature with Fallback
+    // Guaranteed Print/Share Action (Bypasses mobile web sandbox blocks)
     shareBtn.addEventListener('click', () => {
         const originalText = shareBtn.innerText;
-        shareBtn.innerText = 'Preparing Share...';
+        shareBtn.innerText = 'Preparing Print Sheet...';
         shareBtn.disabled = true;
 
         const format = exportFormat.value;
@@ -647,30 +644,43 @@
             
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    alert('Could not create image blob for sharing.');
+                    alert('Could not process print image.');
                     shareBtn.innerText = originalText;
                     shareBtn.disabled = false;
                     return;
                 }
 
                 const file = new File([blob], `Passport_Photos_4x6.${format}`, { type: mimeType });
-                
+                let actionCompleted = false;
+
+                // 1. Try native Web Share API
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             title: 'Passport Photo Sheet',
-                            text: 'Here is your 4x6 passport photo sheet ready for printing.',
+                            text: 'Print this 4x6 photo sheet.',
                             files: [file],
                         });
-                        showToast('📤 Shared successfully!');
+                        actionCompleted = true;
+                        showToast('📤 Sent to printer app!');
                     } catch (error) {
                         if (error.name !== 'AbortError') {
-                            console.error('Sharing failed, falling back to download', error);
-                            triggerDownloadFallback(blob, format);
+                            console.error('Native share aborted', error);
                         }
                     }
-                } else {
-                    triggerDownloadFallback(blob, format);
+                }
+
+                // 2. Fallback: Open image directly in a new tab for native printing
+                if (!actionCompleted) {
+                    const blobUrl = URL.createObjectURL(blob);
+                    const newWindow = window.open(blobUrl, '_blank');
+                    if (!newWindow) {
+                        const link = document.createElement('a');
+                        link.href = blobUrl;
+                        link.target = '_blank';
+                        link.click();
+                    }
+                    showToast('🖨️ Opened image for printing/sharing!');
                 }
 
                 shareBtn.innerText = originalText;
@@ -679,19 +689,11 @@
 
         }).catch(err => {
             console.error("Error:", err);
-            alert("Error preparing file for sharing.");
+            alert("Error preparing file.");
             shareBtn.innerText = originalText;
             shareBtn.disabled = false;
         });
     });
-
-    function triggerDownloadFallback(blob, format) {
-        const link = document.createElement('a');
-        link.download = `Passport_Photos_4x6.${format}`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        showToast('🖼️ Saved to gallery/downloads for your print app!');
-    }
 </script>
 
 <!-- Service Worker Registration -->
